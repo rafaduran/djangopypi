@@ -90,8 +90,16 @@ def register_or_upload(request):
         
         return HttpResponseForbidden('You are not an owner/maintainer of %s' % (package.name,))
     
+    release, created = Release.objects.get_or_create(package=package,
+                                                     version=version)
+    
     version = request.POST.get('version',None).strip()
-    metadata_version = request.POST.get('metadata_version', None).strip()
+    metadata_version = request.POST.get('metadata_version', None)
+
+    if not metadata_version:
+        metadata_version = release.metadata_version
+
+    metadata_version = metadata_version.strip()
     
     if not version or not metadata_version:
         transaction.rollback()
@@ -102,8 +110,6 @@ def register_or_upload(request):
         return HttpResponseBadRequest('Metadata version must be one of: %s' 
                                       (', '.join(settings.DJANGOPYPI_METADATA_FIELDS.keys()),))
     
-    release, created = Release.objects.get_or_create(package=package,
-                                                     version=version)
     
     if (('classifiers' in request.POST or 'download_url' in request.POST) and 
         metadata_version == '1.0'):
