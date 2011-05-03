@@ -20,7 +20,12 @@ def parse_xmlrpc_request(request):
     args, command = xmlrpclib.loads(request.raw_post_data)
     
     if command in conf.XMLRPC_COMMANDS:
-        return conf.XMLRPC_COMMANDS[command](request, *args)
+        view_func = conf.XMLRPC_COMMANDS[command]
+        if isinstance(view_func, basestring):
+            module, func_name = view_func.rsplit('.', 1)
+            view_func = getattr(__import__(module, {}, {}, [func_name]), func_name)
+            conf.XMLRPC_COMMANDS[command] = view_func
+        return view_func(request, *args)
     else:
         return HttpResponseNotAllowed(conf.XMLRPC_COMMANDS.keys())
 

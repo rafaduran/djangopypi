@@ -1,8 +1,5 @@
 from django.conf import settings
 
-from djangopypi.forms import Metadata10Form, Metadata11Form, Metadata12Form
-from djangopypi.views import releases, distutils, xmlrpc
-
 # This is disabled on pypi.python.org, can be useful if you make mistakes
 ALLOW_VERSION_OVERWRITE = False
 
@@ -76,24 +73,24 @@ METADATA_FIELDS = {
 }
 
 METADATA_FORMS = {
-    '1.0': Metadata10Form,
-    '1.1': Metadata11Form,
-    '1.2': Metadata12Form,
+    '1.0': 'djangopypi.forms.Metadata10Form',
+    '1.1': 'djangopypi.forms.Metadata11Form',
+    '1.2': 'djangopypi.forms.Metadata12Form',
 }
 
-FALLBACK_VIEW = releases.index
+FALLBACK_VIEW = 'djangopypi.views.releases.index'
 
 ACTION_VIEWS = {
-    "file_upload": distutils.register_or_upload, #``sdist`` command
-    "submit": distutils.register_or_upload, #``register`` command
-    "list_classifiers": distutils.list_classifiers, #``list_classifiers`` command
+    "file_upload": 'djangopypi.views.distutils.register_or_upload', #``sdist`` command
+    "submit": 'djangopypi.views.distutils.register_or_upload', #``register`` command
+    "list_classifiers": 'djangopypi.views.distutils.list_classifiers', #``list_classifiers`` command
 }
 
 XMLRPC_COMMANDS = {
-    'list_packages': xmlrpc.list_packages,
-    'package_releases': xmlrpc.package_releases,
-    'release_urls': xmlrpc.release_urls,
-    'release_data': xmlrpc.release_data,
+    'list_packages': 'djangopypi.views.xmlrpc.list_packages',
+    'package_releases': 'djangopypi.views.xmlrpc.package_releases',
+    'release_urls': 'djangopypi.views.xmlrpc.release_urls',
+    'release_data': 'djangopypi.views.xmlrpc.release_data',
     #'search': xmlrpc.search, Not done yet
     #'changelog': xmlrpc.changelog, Not done yet
     #'ratings': xmlrpc.ratings, Not done yet

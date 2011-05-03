@@ -7,8 +7,6 @@ from django.utils.datastructures import MultiValueDict
 from django.contrib.auth.models import User
 
 from djangopypi import conf
-# Ensure signals get registered
-from djangopypi import signals
 
 class PackageInfoField(models.Field):
     description = u'Python Package Information Field'
@@ -185,3 +183,6 @@ try:
     add_introspection_rules([], ["^djangopypi\.models\.PackageInfoField"])
 except ImportError:
     pass
+
+# Ensure signals get registered
+from djangopypi import signals

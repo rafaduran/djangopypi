@@ -70,11 +70,15 @@ def manage_metadata(request, package, version, **kwargs):
     
     if not release.metadata_version in conf.METADATA_FORMS:
         #TODO: Need to change this to a more meaningful error
-        raise Http404()
+        raise Http404('Metadata Version is not supported')
     
     kwargs['extra_context'][kwargs['template_object_name']] = release
     
-    form_class = conf.METADATA_FORMS.get(release.metadata_version)
+    form_class = conf.METADATA_FORMS[release.metadata_version]
+    if isinstance(form_class, basestring):
+        app_module, class_name = form_class.rsplit('.', 1)
+        form_class = getattr(__import__(app_module, {}, {}, [class_name]), class_name)
+        conf.METADATA_FORMS[release.metadata_version] = form_class
     
     initial = {}
     multivalue = ('classifier',)
