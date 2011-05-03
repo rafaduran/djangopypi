@@ -87,17 +87,20 @@ def register_or_upload(request):
         request.user in package.maintainers.all()):
         
         return HttpResponseForbidden('You are not an owner/maintainer of %s' % (package.name,))
-    
+
+    version = request.POST.get('version', None)
+    if version:
+        version = version.strip()
+
     release, created = Release.objects.get_or_create(package=package,
                                                      version=version)
     
-    version = request.POST.get('version',None).strip()
     metadata_version = request.POST.get('metadata_version', None)
-
     if not metadata_version:
         metadata_version = release.metadata_version
 
-    metadata_version = metadata_version.strip()
+    if metadata_version:
+        metadata_version = metadata_version.strip()
     
     if not version or not metadata_version:
         transaction.rollback()
