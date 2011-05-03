@@ -4,9 +4,8 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from djangopypi.settings import settings
+from djangopypi import conf
 from djangopypi.models import Package, Classifier, Release, Distribution
-
 
 
 class SimplePackageSearchForm(forms.Form):
@@ -34,7 +33,7 @@ class DistributionUploadForm(forms.ModelForm):
             print '%s does not exist' % (name,)
             return content
         
-        if settings.DJANGOPYPI_ALLOW_VERSION_OVERWRITE:
+        if conf.DJANGOPYPI_ALLOW_VERSION_OVERWRITE:
             raise forms.ValidationError('Version overwrite is not yet handled')
         
         raise forms.ValidationError('That distribution already exists, please '
@@ -43,8 +42,8 @@ class DistributionUploadForm(forms.ModelForm):
         
 
 class ReleaseForm(forms.ModelForm):
-    metadata_version = forms.CharField(widget=forms.Select(choices=zip(settings.DJANGOPYPI_METADATA_FIELDS.keys(),
-                                                                       settings.DJANGOPYPI_METADATA_FIELDS.keys())))
+    metadata_version = forms.CharField(widget=forms.Select(choices=zip(conf.DJANGOPYPI_METADATA_FIELDS.keys(),
+                                                                       conf.DJANGOPYPI_METADATA_FIELDS.keys())))
     
     class Meta:
         model = Release

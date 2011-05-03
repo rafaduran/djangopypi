@@ -1,9 +1,8 @@
-import os
 import unittest
 import xmlrpclib
 import StringIO
 #from djangopypi.views import parse_distutils_request, simple
-from djangopypi.models import Package, Classifier, Release, PackageInfoField, Distribution
+from djangopypi.models import Package, Release
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
@@ -139,7 +138,6 @@ class TestSimpleView(unittest.TestCase):
     #     response = simple(request)
     #     self.assertEquals(400, response.status_code)
 
-from django.test.client import MULTIPART_CONTENT
 class XmlRpcClient(Client):
     def __init__(self, *args, **kwargs):
         self.extra_headers = {}
