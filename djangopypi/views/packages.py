@@ -48,9 +48,10 @@ def search(request, **kwargs):
         form = SimplePackageSearchForm(request.GET)
     
     if form.is_valid():
-        q = form.cleaned_data['query']
+        q = form.cleaned_data['q']
         kwargs['queryset'] = Package.objects.filter(Q(name__contains=q) | 
                                                     Q(releases__package_info__contains=q)).distinct()
+
     return index(request, **kwargs)
 
 @user_owns_package()

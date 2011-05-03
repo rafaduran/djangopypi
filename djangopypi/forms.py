@@ -5,7 +5,7 @@ from djangopypi import conf
 from djangopypi.models import Package, Classifier, Release, Distribution
 
 class SimplePackageSearchForm(forms.Form):
-    query = forms.CharField(max_length=255)
+    q = forms.CharField(max_length=255)
 
 class PackageForm(forms.ModelForm):
     class Meta:

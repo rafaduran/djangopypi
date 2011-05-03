@@ -111,7 +111,7 @@ class TestSearch(unittest.TestCase):
         self.dummy_user.delete()
     
     def test_search_for_package(self):
-        response = client.post(reverse('djangopypi-search'), {'search_term': 'foo'})
+        response = client.post(reverse('djangopypi-search'), {'query': 'foo'})
         self.assertTrue("The quick brown fox jumps over the lazy dog." in response.content)
         
 class TestSimpleView(unittest.TestCase):
@@ -162,8 +162,10 @@ class XmlRpcClient(Client):
 class ProxiedTransport(xmlrpclib.Transport):
     def set_proxy(self, proxy):
         self.proxy = proxy
+
     def make_connection(self, host):
         return XmlRpcClient()
+
     def single_request(self, host, handler, request_body, verbose=0):
         connection = self.make_connection(host)
         response = connection.post('/pypi/', request_body)
