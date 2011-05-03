@@ -183,6 +183,3 @@ try:
     add_introspection_rules([], ["^djangopypi\.models\.PackageInfoField"])
 except ImportError:
     pass
-
-# Ensure signals get registered
-from djangopypi import signals
