@@ -152,7 +152,7 @@ added"""
         # TODO: review this, very empiric rules
         if filename.endswith('.zip') or filename.endswith('.tar.gz'):
             return 'sdist'
-        elif filename.endsith('.egg'):
+        elif filename.endswith('.egg'):
             return 'bdist'
         else:
             return 'sdist'
