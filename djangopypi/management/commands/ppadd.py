@@ -18,6 +18,8 @@ from optparse import make_option
 
 import pkginfo
 
+import pkg_resources
+
 from setuptools.package_index import PackageIndex
 
 from djangopypi import conf
@@ -56,11 +58,14 @@ added"""
 
     def handle_label(self, label, **options):
         with tempdir() as tmp:
-            path = self.pypi.download(label, tmp)
-            if path:
-                self._save_package(path, options["owner"])
-            else:
-                print "Could not add %s. Not found." % label
+            reqs = pkg_resources.parse_requirements(label)
+            for req in reqs:
+                try:
+                    package = self.pypi.fetch_distribution(req, tmp, source=True)
+                except Exception as err:
+                    print "Could not add %s: %s." % (req, err)
+                else:
+                    self._save_package(package.location, options["owner"])
 
     def _save_package(self, path, ownerid):
         meta = self._get_meta(path)
@@ -152,10 +157,9 @@ added"""
         # TODO: review this, very empiric rules
         if filename.endswith('.zip') or filename.endswith('.tar.gz'):
             return 'sdist'
-        elif filename.endswith('.egg'):
-            return 'bdist'
-        else:
-            return 'sdist'
+        raise TypeError(
+                "The download resource:{filename} is not a source file".format(
+                    filename=filename))
 
     def _get_md5(self, filename):
         "Returns md5 sum for a given file"
