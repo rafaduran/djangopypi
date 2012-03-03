@@ -4,19 +4,24 @@ equivelant of calling easy_install, but the install target is the chishop.
 """
 
 from __future__ import with_statement
+from contextlib import contextmanager
+import hashlib
 import os
-import tempfile
 import shutil
+import tempfile
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.management.base import LabelCommand
+
+from optparse import make_option
 
 import pkginfo
 
-from contextlib import contextmanager
-from django.contrib.auth.models import User
-from django.core.files.base import File
-from django.core.management.base import LabelCommand
-from djangopypi.models import Package, Release, Classifier
-from optparse import make_option
 from setuptools.package_index import PackageIndex
+
+from djangopypi import conf
+from djangopypi.models import Package, Release, Classifier, Distribution
 
 @contextmanager
 def tempdir():
@@ -116,21 +121,69 @@ added"""
         for classifier in meta.classifiers:
             package.classifiers.add(
                     Classifier.objects.get_or_create(name=classifier)[0])
-
         release = Release()
         release.version = meta.version
         release.package = package
-        filename = os.path.basename(path)
+        release.package_info = self._get_pkg_info(meta)
 
-        file = File(open(path, "rb"))
-        release.distribution.save(filename, file)
         release.save()
+
+        dis = Distribution()
+        dis.release = release
+
+        dis.content.file = open(path, 'rb')
+        dis.content.name = settings.DJANGOPYPI_RELEASE_UPLOAD_TO + '/' +\
+                path.split('/')[-1]
+        # TODO: Very bad hack here, how can I fix it?
+        shutil.copy(path, settings.MEDIA_ROOT + '/' + dis.content.name)
+
+        dis.md5_digest = self._get_md5(path)
+        dis.filetype = self._get_filetype(path)
+        dis.uploader = owner
+        dis.comment = ''
+        dis.pyversion = meta.requires_python or ''
+        dis.signature = ''
+
+        dis.save()
         print "%s-%s added" % (meta.name, meta.version)
+
+    def _get_filetype(self, filename):
+        "Returns the package file type, sdist o bdist"
+        # TODO: review this, very empiric rules
+        if filename.endswith('.zip') or filename.endswith('.tar.gz'):
+            return 'sdist'
+        elif filename.endsith('.egg'):
+            return 'bdist'
+        else:
+            return 'sdist'
+
+    def _get_md5(self, filename):
+        "Returns md5 sum for a given file"
+        md5 = hashlib.md5()
+        with open(filename, 'rb') as content:
+            while(1):
+                block = content.read(md5.block_size)
+                if not block:
+                    break
+                md5.update(block)
+        return md5.hexdigest()
+
+    def _get_pkg_info(self, meta):
+        """
+        Transforms metadata from a package to dict usable for MultiValueDict
+        instances.
+        """
+        fields = conf.METADATA_FIELDS[meta.metadata_version]
+        metadict = dict([(key, [getattr(meta, key),]) for key in dir(meta)
+                if key in fields and not key.startswith('_')])
+        return metadict
+
 
     def _get_meta(self, path):
         data = pkginfo.get_metadata(path)
         if data:
             return data
         else:
-            print "Couldn't get metadata from %s. Not added to chishop" % os.path.basename(path)
+            print "Couldn't get metadata from %s. Not added to chishop" % (
+                    os.path.basename(path))
             return None
