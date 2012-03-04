@@ -123,13 +123,18 @@ added"""
 
         package.save()
 
-        for classifier in meta.classifiers:
-            package.classifiers.add(
-                    Classifier.objects.get_or_create(name=classifier)[0])
+        # TODO: Do I need add classifieres objects???
+#        for classifier in meta.classifiers:
+#            package.classifiers.add(
+#                    Classifier.objects.get_or_create(name=classifier)[0])
         release = Release()
         release.version = meta.version
         release.package = package
         release.package_info = self._get_pkg_info(meta)
+        # Classifiers is processed separatily since it is a list a must be
+        # properly set son getlist returns the right result
+        for cs in meta.classifiers:
+            release.package_info.update({'classifiers': cs})
 
         release.save()
 
@@ -177,9 +182,14 @@ added"""
         Transforms metadata from a package to dict usable for MultiValueDict
         instances.
         """
-        fields = conf.METADATA_FIELDS[meta.metadata_version]
+        meta_version = meta.metadata_version
+        if hasattr(meta, 'classifiers') or hasattr(meta,
+                'download_url') and meta_version == '1.0':
+            meta_version = '1.1'
+        fields = conf.METADATA_FIELDS[meta_version]
         metadict = dict([(key, [getattr(meta, key),]) for key in dir(meta)
-                if key in fields and not key.startswith('_')])
+                if key in fields and not key.startswith('_') and
+                key != 'classifiers'])
         return metadict
 
 

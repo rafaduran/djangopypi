@@ -121,7 +121,7 @@ def register_or_upload(request):
     fields = conf.METADATA_FIELDS[metadata_version]
     
     if 'classifiers' in request.POST:
-        request.POST.setlist('classifier',request.POST.getlist('classifiers'))
+        request.POST.setlist('classifiers',request.POST.getlist('classifiers'))
     
     release.package_info = MultiValueDict(dict(filter(lambda t: t[0] in fields,
                                                       request.POST.iterlists())))

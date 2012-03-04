@@ -121,7 +121,7 @@ class Release(models.Model):
 
     @property
     def classifiers(self):
-        return self.package_info.getlist('classifier')
+        return self.package_info.getlist('classifiers')
 
     @models.permalink
     def get_absolute_url(self):
